@@ -16,4 +16,7 @@ export class User {
 
   @prop({ default: Date.now, immutable: true })
   createdAt: Date;
+
+  @prop({ default: false })
+  isDeleted: boolean;
 }
