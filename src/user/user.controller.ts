@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { GetUserDto, LoginUserDto, RegisterUserDto } from './utils/user.dto';
 import { UserService } from './user.service';
-import { UserRole } from 'src/utils/enums/user-role.enum';
+import { UserRole } from 'src/common/enums/user-role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 

@@ -1,5 +1,5 @@
 import { prop } from '@typegoose/typegoose';
-import { UserRole } from 'src/utils/enums/user-role.enum';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 export class User {
   @prop({ required: true, trim: true })

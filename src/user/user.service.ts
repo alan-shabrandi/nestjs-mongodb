@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginUserDto, RegisterUserDto } from './utils/user.dto';
 import { Model } from 'mongoose';
-import { UserRole } from 'src/utils/enums/user-role.enum';
+import { UserRole } from 'src/common/enums/user-role.enum';
 import { UserDocument } from './utils/user.type';
 
 @Injectable()

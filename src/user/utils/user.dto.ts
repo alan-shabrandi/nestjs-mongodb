@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
   IsEmail,
   IsIn,
   IsNotEmpty,
@@ -14,12 +13,13 @@ import {
 
 export class RegisterUserDto {
   @IsNotEmpty()
+  @MinLength(3)
   fullName: string;
 
   @IsEmail()
   email: string;
 
-  @MinLength(6)
+  @MinLength(8)
   password: string;
 }
 
