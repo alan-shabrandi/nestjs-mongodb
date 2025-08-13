@@ -22,6 +22,7 @@ export async function generateRandomUsers(
   const emailSet = new Set<string>();
 
   for (let i = 0; i < total; i++) {
+    console.log('i', i);
     let email: string;
 
     if (i < admins) {
