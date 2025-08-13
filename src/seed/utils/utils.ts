@@ -42,7 +42,7 @@ export async function generateRandomUsers(
       email,
       password: hashedPassword,
       role,
-      isDeleted: false,
+      isDeleted: faker.datatype.boolean(),
       age: faker.number.int({ min: 18, max: 70 }),
     });
   }

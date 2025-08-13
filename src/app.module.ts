@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
 import { SeedModule } from './seed/seed.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SeedModule } from './seed/seed.module';
     AuthModule,
     SentryModule.forRoot(),
     SeedModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [
