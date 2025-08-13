@@ -1,59 +1,13 @@
 import { Type } from 'class-transformer';
 import {
-  IsEmail,
   IsIn,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Max,
   Min,
-  MinLength,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-export class RegisterUserDto {
-  @ApiProperty({
-    description: 'Full name of the user',
-    minLength: 3,
-    example: 'Alan Shabrandi',
-  })
-  @IsNotEmpty()
-  @MinLength(3)
-  fullName: string;
-
-  @ApiProperty({
-    description: 'Email address of the user',
-    example: 'alan@example.com',
-  })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
-    description: 'Password with minimum length of 8 characters',
-    minLength: 8,
-    example: 'strongPassword123',
-  })
-  @MinLength(8)
-  password: string;
-}
-
-export class LoginUserDto {
-  @ApiProperty({
-    description: 'Email address of the user',
-    example: 'alan@example.com',
-  })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
-    description: 'Password of the user',
-    example: 'strongPassword123',
-  })
-  @IsNotEmpty()
-  password: string;
-}
-
+import { ApiPropertyOptional } from '@nestjs/swagger';
 export class GetUserDto {
   @ApiPropertyOptional({
     description: 'User role to filter',

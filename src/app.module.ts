@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { APP_FILTER } from '@nestjs/core';
     UserModule,
     AuthModule,
     SentryModule.forRoot(),
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [

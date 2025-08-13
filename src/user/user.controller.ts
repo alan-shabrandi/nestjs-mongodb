@@ -5,15 +5,14 @@ import {
   Get,
   Param,
   Patch,
-  Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { GetUserDto, LoginUserDto, RegisterUserDto } from './utils/user.dto';
+import { GetUserDto } from './utils/user.dto';
 import { UserService } from './user.service';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Roles, User } from 'src/auth/decorators/decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import {
   ApiBearerAuth,
@@ -23,28 +22,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RegisterUserDto } from 'src/auth/utils/auth.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered' })
-  @ApiResponse({ status: 400, description: 'Validation failed' })
-  async register(@Body() createUserDto: RegisterUserDto) {
-    return this.userService.register(createUserDto);
-  }
-
-  @Post('login')
-  @ApiOperation({ summary: 'Login user and return access token' })
-  @ApiResponse({ status: 200, description: 'User logged in successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginUserDto: LoginUserDto) {
-    return this.userService.login(loginUserDto);
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Get('list')
   @ApiOperation({ summary: 'Get list of users with optional filters' })
   @ApiQuery({ name: 'role', enum: UserRole, required: false })
@@ -56,17 +42,34 @@ export class UserController {
   @ApiQuery({ name: 'fields', required: false })
   @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean })
   @ApiResponse({ status: 200, description: 'List of users returned' })
-  async usersList(@Query() query: GetUserDto) {
-    return this.userService.usersList(
-      query.role as UserRole,
-      query.search,
-      query.page,
-      query.limit,
-      query.sortBy,
-      query.order,
-      query.fields,
-      query.includeDeleted === 'true',
-    );
+  async usersList(
+    @Query() query: GetUserDto,
+    @User() user: { userId: string; role: UserRole },
+  ) {
+    if (user.role === UserRole.Admin) {
+      return this.userService.usersList(
+        query.role as UserRole,
+        query.search,
+        query.page,
+        query.limit,
+        query.sortBy,
+        query.order,
+        query.fields,
+        query.includeDeleted === 'true',
+      );
+    } else {
+      return this.userService.usersList(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        [user.userId],
+      );
+    }
   }
 
   @Get(':id')
@@ -111,7 +114,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  @ApiBearerAuth() // Requires JWT token in Swagger
+  @ApiBearerAuth()
   @Roles('admin')
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Permanently delete user (Admin only)' })

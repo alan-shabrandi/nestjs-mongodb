@@ -19,4 +19,10 @@ export class User {
 
   @prop({ default: false })
   isDeleted: boolean;
+
+  @prop()
+  refreshToken?: string | null;
+
+  @prop()
+  age?: number;
 }
