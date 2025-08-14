@@ -27,7 +27,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const seedService = app.get(SeedService);
-  await seedService.seedUsers();
+  await seedService.seedUsers(500000, 10);
 
   await app.listen(process.env.PORT ?? 3000);
 }
