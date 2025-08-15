@@ -1,6 +1,13 @@
 import { index, prop } from '@typegoose/typegoose';
 import { UserRole } from 'src/common/enums/user-role.enum';
-@index({ email: 1 })
+@index(
+  { email: 1, role: -1 },
+  { partialFilterExpression: { isDeleted: false } },
+)
+@index(
+  { fullName: 'text', email: 'text' },
+  { weights: { fullName: 5, email: 1 } },
+)
 export class User {
   @prop({ required: true, trim: true })
   fullName!: string;
