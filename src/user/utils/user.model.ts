@@ -1,6 +1,6 @@
-import { prop } from '@typegoose/typegoose';
+import { index, prop } from '@typegoose/typegoose';
 import { UserRole } from 'src/common/enums/user-role.enum';
-
+@index({ email: 1 })
 export class User {
   @prop({ required: true, trim: true })
   fullName!: string;
