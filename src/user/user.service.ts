@@ -4,6 +4,9 @@ import { Model } from 'mongoose';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { UserDocument } from './utils/user.type';
 import { RegisterUserDto } from 'src/auth/utils/auth.dto';
+import { PaginationOptions } from 'src/common/utils/pagination';
+import { QueryBuilder } from 'src/common/utils/query-builder';
+import { GetUserDto } from './utils/user.dto';
 
 @Injectable()
 export class UserService {
@@ -12,101 +15,115 @@ export class UserService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
+  private async findUserOrThrow(userId: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
   async findById(userId: string) {
-    return await this.userModel.findById(userId).exec();
+    return this.findUserOrThrow(userId);
   }
 
   async findByEmail(email: string) {
-    return await this.userModel.findOne({ email }).exec();
+    return this.userModel.findOne({ email }).exec();
   }
 
-  async usersList(
+  private async usersList(
     role?: UserRole,
     search?: string,
-    page: number = 1,
-    limit: number = 10,
-    sortBy: string = 'createdAt',
+    page = 1,
+    limit = 10,
+    sortBy = 'createdAt',
     order: 'asc' | 'desc' = 'asc',
     fields?: string,
-    includeDeleted: boolean = false,
+    includeDeleted = false,
     userIds?: string[],
   ) {
-    const filter: any = {};
+    const qb = new QueryBuilder<UserDocument>(this.userModel)
+      .excludeDeleted(includeDeleted)
+      .filterBy('role', role)
+      .search(['fullName', 'email'], search)
+      .sort(sortBy, order)
+      .paginate({ page, limit });
 
-    if (!includeDeleted) filter.isDeleted = { $ne: true };
-    if (role) filter.role = role;
-    if (userIds) filter._id = { $in: userIds };
-
-    if (search) {
-      filter.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-      ];
+    if (userIds?.length) {
+      qb.filterByIds(userIds);
     }
 
-    const skip = (page - 1) * limit;
-    const sortOrder = order === 'asc' ? 1 : -1;
-    const sortObj: any = {};
-    sortObj[sortBy] = sortOrder;
+    if (fields) qb.select(fields);
 
-    const query = this.userModel
-      .find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort(sortObj);
-
-    if (fields) query.select(fields);
-
-    const [users, total] = await Promise.all([
-      query.exec(),
-      this.userModel.countDocuments(filter).exec(),
-    ]);
-
+    const result = await qb.exec();
     return {
-      users,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
+      users: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 
-  async updateUserPut(userId: string, updateUserDto: Partial<RegisterUserDto>) {
-    const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+  async usersListForUser(
+    currentUser: { userId: string; role: UserRole },
+    query: GetUserDto,
+  ) {
+    const qb = new QueryBuilder<UserDocument>(this.userModel)
+      .excludeDeleted(query.includeDeleted === 'true')
+      .search(['fullName', 'email'], query.search)
+      .sort(
+        query.sortBy ?? 'createdAt',
+        (query.order as 'asc' | 'desc') ?? 'asc',
+      )
+      .paginate({ page: query.page ?? 1, limit: query.limit ?? 10 });
+    if (query.fields) qb.select(query.fields);
 
-    user.email = updateUserDto.email ?? user.email;
-    user.fullName = updateUserDto.fullName ?? user.fullName;
+    if (currentUser.role === UserRole.Admin && query.role)
+      qb.filterBy('role', query.role);
+    else if (currentUser.role !== UserRole.Admin)
+      qb.filterByIds([currentUser.userId]);
 
-    if (updateUserDto.password) user.password = updateUserDto.password;
-
-    return await user.save();
+    const result = await qb.exec();
+    return {
+      users: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
+    };
   }
 
-  async updateUserPatch(
+  private async updateUser(
     userId: string,
-    partialUpdateDto: Partial<RegisterUserDto>,
+    updateDto: Partial<RegisterUserDto>,
+    isPatch = false,
   ) {
-    const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    const user = await this.findUserOrThrow(userId);
 
-    if (partialUpdateDto.email !== undefined)
-      user.email = partialUpdateDto.email;
-    if (partialUpdateDto.fullName !== undefined)
-      user.fullName = partialUpdateDto.fullName;
-    if (partialUpdateDto.password !== undefined)
-      user.password = partialUpdateDto.password;
+    if (isPatch) {
+      if (updateDto.email !== undefined) user.email = updateDto.email;
+      if (updateDto.fullName !== undefined) user.fullName = updateDto.fullName;
+      if (updateDto.password !== undefined) user.password = updateDto.password;
+    } else {
+      user.email = updateDto.email ?? user.email;
+      user.fullName = updateDto.fullName ?? user.fullName;
+      if (updateDto.password) user.password = updateDto.password;
+    }
 
-    return await user.save();
+    return user.save();
+  }
+
+  async updateUserPut(userId: string, dto: Partial<RegisterUserDto>) {
+    return this.updateUser(userId, dto, false);
+  }
+
+  async updateUserPatch(userId: string, dto: Partial<RegisterUserDto>) {
+    return this.updateUser(userId, dto, true);
   }
 
   async softDeleteUser(userId: string) {
-    const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
-
+    const user = await this.findUserOrThrow(userId);
     const timestamp = Date.now();
     user.email = `${user.email}.${timestamp}.deleted`;
     user.isDeleted = true;
-    return await user.save();
+    return user.save();
   }
 
   async permanentDeleteUser(userId: string) {

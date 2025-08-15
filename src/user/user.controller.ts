@@ -24,7 +24,6 @@ import {
 } from '@nestjs/swagger';
 import { RegisterUserDto } from 'src/auth/utils/auth.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-
 @ApiTags('user')
 @Controller('user')
 export class UserController {
@@ -46,30 +45,7 @@ export class UserController {
     @Query() query: GetUserDto,
     @User() user: { userId: string; role: UserRole },
   ) {
-    if (user.role === UserRole.Admin) {
-      return this.userService.usersList(
-        query.role as UserRole,
-        query.search,
-        query.page,
-        query.limit,
-        query.sortBy,
-        query.order,
-        query.fields,
-        query.includeDeleted === 'true',
-      );
-    } else {
-      return this.userService.usersList(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        false,
-        [user.userId],
-      );
-    }
+    return this.userService.usersListForUser(user, query);
   }
 
   @Get(':id')
@@ -115,7 +91,7 @@ export class UserController {
 
   @Delete(':id')
   @ApiBearerAuth()
-  @Roles('admin')
+  @Roles(UserRole.Admin)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Permanently delete user (Admin only)' })
   @ApiParam({ name: 'id', type: String })
