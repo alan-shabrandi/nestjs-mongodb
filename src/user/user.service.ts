@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { UserDocument } from './utils/user.type';
 import { RegisterUserDto } from 'src/auth/utils/auth.dto';
-import { PaginationOptions } from 'src/common/utils/pagination';
 import { QueryBuilder } from 'src/common/utils/query-builder';
 import { GetUserDto } from './utils/user.dto';
 
@@ -27,39 +26,6 @@ export class UserService {
 
   async findByEmail(email: string) {
     return this.userModel.findOne({ email }).exec();
-  }
-
-  private async usersList(
-    role?: UserRole,
-    search?: string,
-    page = 1,
-    limit = 10,
-    sortBy = 'createdAt',
-    order: 'asc' | 'desc' = 'asc',
-    fields?: string,
-    includeDeleted = false,
-    userIds?: string[],
-  ) {
-    const qb = new QueryBuilder<UserDocument>(this.userModel)
-      .excludeDeleted(includeDeleted)
-      .filterBy('role', role)
-      .search(['fullName', 'email'], search)
-      .sort(sortBy, order)
-      .paginate({ page, limit });
-
-    if (userIds?.length) {
-      qb.filterByIds(userIds);
-    }
-
-    if (fields) qb.select(fields);
-
-    const result = await qb.exec();
-    return {
-      users: result.items,
-      total: result.total,
-      page: result.page,
-      totalPages: result.totalPages,
-    };
   }
 
   async usersListForUser(
@@ -87,6 +53,7 @@ export class UserService {
       total: result.total,
       page: result.page,
       totalPages: result.totalPages,
+      aaa: 'fesfff',
     };
   }
 

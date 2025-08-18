@@ -1,0 +1,23 @@
+# Use Node.js LTS
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install Nest CLI globally (better for watch mode)
+RUN npm install -g @nestjs/cli
+
+# Copy package files
+COPY package*.json ./
+
+# Install deps
+RUN npm install
+
+# Copy source
+COPY . .
+
+# Expose NestJS port (match your .env)
+EXPOSE ${NEST_PORT}
+
+# Default command (can be overridden in docker-compose)
+CMD ["node", "run", "start:dev"]

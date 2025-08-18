@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './auth/auth.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
+
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
 import { ReportModule } from './report/report.module';
+import { OrderModule } from './order/order.module';
+import { WalletModule } from './wallet/wallet.module';
+import { TransactionModule } from './common/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -20,9 +24,12 @@ import { ReportModule } from './report/report.module';
     }),
     UserModule,
     AuthModule,
-    SentryModule.forRoot(),
     SeedModule,
     ReportModule,
+    SentryModule.forRoot(),
+    TransactionModule,
+    OrderModule,
+    WalletModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: SentryGlobalFilter }],
 })

@@ -5,9 +5,11 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import cookieParser from 'cookie-parser';
 import { SeedService } from './seed/seed.service';
 import { setupSwagger } from './config/swagger.config';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Global middlewares & Pips
   setupGlobalPipes(app);
@@ -21,9 +23,9 @@ async function bootstrap() {
   await runSeed(app);
 
   // Start server
-  const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-  console.log(`Server is running on Port ${port}`);
+  const port = configService.get<number>('NEST_PORT') || 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running: ${await app.getUrl()}`);
 }
 
 const setupGlobalPipes = (app: INestApplication) => {
