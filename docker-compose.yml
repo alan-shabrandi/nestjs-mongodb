@@ -20,7 +20,7 @@ services:
       - '8081:8081'
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_ENABLE_ADMIN: 'false'
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: 'true'
       ME_CONFIG_BASICAUTH_USERNAME: '' # no auth
       ME_CONFIG_BASICAUTH_PASSWORD: '' # no auth
     depends_on:
@@ -34,7 +34,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      MONGO_URI: 'mongodb://mongodb:27017/mydatabase' # database name here
+      MONGO_URI: '${MONGO_URI}' # database name here
     volumes:
       - .:/app
       - /app/node_modules
