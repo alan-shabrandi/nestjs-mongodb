@@ -53,7 +53,6 @@ export class UserService {
       total: result.total,
       page: result.page,
       totalPages: result.totalPages,
-      aaa: 'fesfff',
     };
   }
 
