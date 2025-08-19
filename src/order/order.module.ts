@@ -4,6 +4,7 @@ import { OrderSchema } from './utils/order.schema';
 import { OrderService } from './order.service';
 import { WalletSchema } from 'src/wallet/utils/wallet.model';
 import { TransactionModule } from 'src/common/transaction/transaction.module';
+import { OrderController } from './order.controller';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TransactionModule } from 'src/common/transaction/transaction.module';
     ]),
     TransactionModule,
   ],
+  controllers: [OrderController],
   providers: [OrderService],
   exports: [OrderService],
 })
