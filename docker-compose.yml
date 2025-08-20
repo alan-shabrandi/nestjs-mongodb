@@ -10,12 +10,11 @@ services:
   mongo1:
     image: mongo:6
     container_name: mongo1
-    command: ['/docker-entrypoint-initdb.d/init-replica.sh']
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     ports:
       - '27018:27017'
     volumes:
       - mongo1-data:/data/db
-      - ./mongo-init/init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh
     healthcheck:
       test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 5s
@@ -25,12 +24,11 @@ services:
   mongo2:
     image: mongo:6
     container_name: mongo2
-    command: ['/docker-entrypoint-initdb.d/init-replica.sh']
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     ports:
       - '27019:27017'
     volumes:
       - mongo2-data:/data/db
-      - ./mongo-init/init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh
     depends_on:
       - mongo1
     healthcheck:
@@ -42,12 +40,11 @@ services:
   mongo3:
     image: mongo:6
     container_name: mongo3
-    command: ['/docker-entrypoint-initdb.d/init-replica.sh']
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     ports:
       - '27020:27017'
     volumes:
       - mongo3-data:/data/db
-      - ./mongo-init/init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh
     depends_on:
       - mongo1
     healthcheck:
@@ -63,13 +60,25 @@ services:
     ports:
       - '27021:27017'
     restart: always
+    depends_on:
+      - mongo1
     healthcheck:
       test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  mongo-init:
+    image: mongo:6
+    container_name: mongo-init
     depends_on:
       - mongo1
+      - mongo2
+      - mongo3
+      - mongo-arbiter
+    volumes:
+      - ./mongo-init/init-replica.sh:/init-replica.sh
+    entrypoint: ['sh', '/init-replica.sh']
 
   mongo-express:
     image: mongo-express:1.0.0
@@ -103,6 +112,7 @@ services:
       - mongo3
       - mongo-arbiter
       - mongo-express
+      - mongo-init
     command: ['npm', 'run', 'start-with-mongo']
 
 volumes:
