@@ -8,9 +8,10 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
 import { ReportModule } from './report/report.module';
-import { OrderModule } from './order/order.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TransactionModule } from './common/transaction/transaction.module';
+import { ProductModule } from './product/product.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -28,8 +29,9 @@ import { TransactionModule } from './common/transaction/transaction.module';
     ReportModule,
     SentryModule.forRoot(),
     TransactionModule,
-    OrderModule,
     WalletModule,
+    ProductModule,
+    OrderModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: SentryGlobalFilter }],
 })

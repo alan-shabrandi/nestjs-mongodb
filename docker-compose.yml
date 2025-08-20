@@ -1,3 +1,9 @@
+# docker-compose up -d
+# docker exec -it mongo1 mongosh --eval 'rs.addArb("mongo-arbiter:27017")'
+
+# show replica set
+# docker exec -it mongo1 mongosh --eval "rs.status().members.map(m => ({name: m.name, state: m.stateStr}))"
+
 version: '3.9'
 
 services:
@@ -50,6 +56,21 @@ services:
       timeout: 5s
       retries: 5
 
+  mongo-arbiter:
+    image: mongo:6
+    container_name: mongo-arbiter
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
+    ports:
+      - '27021:27017'
+    restart: always
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - mongo1
+
   mongo-express:
     image: mongo-express:1.0.0
     container_name: mongo-express
@@ -80,6 +101,7 @@ services:
       - mongo1
       - mongo2
       - mongo3
+      - mongo-arbiter
       - mongo-express
     command: ['npm', 'run', 'start-with-mongo']
 

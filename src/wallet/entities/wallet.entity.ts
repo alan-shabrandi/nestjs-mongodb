@@ -30,9 +30,7 @@ export const WalletModel = getModelForClass(Wallet) as WalletModelType;
 export const WalletSchema = WalletModel.schema;
 export type WalletDocument = HydratedDocument<Wallet>;
 
-WalletModel.findOrCreate = async function (
-  userId: string,
-): Promise<WalletDocument> {
+WalletModel.findOrCreate = async function (userId: string): Promise<WalletDocument> {
   let wallet = await this.findOne({ userId }).exec();
 
   if (!wallet) {
