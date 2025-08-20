@@ -1,5 +1,4 @@
 # docker-compose up -d
-# docker exec -it mongo1 mongosh --eval 'rs.addArb("mongo-arbiter:27017")'
 
 # show replica set
 # docker exec -it mongo1 mongosh --eval "rs.status().members.map(m => ({name: m.name, state: m.stateStr}))"
